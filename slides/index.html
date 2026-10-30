@@ -1,0 +1,1166 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1200, initial-scale=1">
+<title>Concepts du cours IA — Sessions 1 à 7</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/white.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+<link rel="stylesheet" href="css/custom.css">
+</head>
+<body>
+<button class="theme-toggle" id="theme-toggle" aria-label="Basculer le thème clair/sombre">🌙 Sombre</button>
+<div class="reveal"><div class="slides">
+
+<section>
+  <section>
+    <span class="tag">IFAGE — DIAA</span>
+    <h1>Développeur-euse d'IA appliquée</h1>
+    <h3 class="subtitle">Les concepts du cours — Sessions 1 à 7</h3>
+    <p class="small muted">Du neurone artificiel au Deep Q-Network, avec l'étude de cas DroneRL</p>
+    <aside class="notes">
+      Ce deck est une reprise pédagogique de tout ce qu'on a vu depuis la session 1. L'idée n'est pas d'apprendre de nouvelles choses mais de reconsolider les bases avant de continuer, exactement comme on recommence chaque cours par un résumé du précédent.
+    </aside>
+  </section>
+  <section>
+    <h2>Feuille de route</h2>
+    <ol class="small">
+      <li>Introduction à l'IA</li>
+      <li>Le neurone artificiel et le réseau de neurones</li>
+      <li>Les types d'apprentissage</li>
+      <li>Pipeline supervisé concret — MNIST</li>
+      <li>Overfitting et régularisation</li>
+      <li>Transfer learning et fine-tuning</li>
+      <li>Introduction au Reinforcement Learning</li>
+      <li>Q-Learning et l'équation de Bellman</li>
+      <li>Deep Q-Network (DQN)</li>
+      <li>Aller plus loin — Prioritized Experience Replay</li>
+      <li>Étude de cas — DroneRL</li>
+    </ol>
+    <aside class="notes">On suit l'ordre chronologique du cours. Chaque thème reprend : le principe, une analogie, un exemple concret, puis — quand c'est pertinent — un exemple chiffré animé pas à pas.</aside>
+  </section>
+</section>
+
+<section>
+  <section><h2>1. Introduction à l'IA</h2><p class="muted small">Session 1</p></section>
+
+  <section>
+    <h3>Qu'est-ce que le Machine Learning ?</h3>
+    <p class="small">Capacité d'un ordinateur à <strong>apprendre un comportement à partir d'exemples</strong>, plutôt que d'être explicitement programmé ligne par ligne.</p>
+    <p class="fragment small">Analogie : on n'écrit pas la recette pour reconnaître un chat sur une photo — on montre des milliers de photos de chats et le système déduit lui-même les règles.</p>
+    <aside class="notes">C'est le changement de paradigme central : avant, un développeur écrivait la logique. Maintenant, on fournit des exemples (données) et un algorithme d'apprentissage en déduit la logique lui-même.</aside>
+  </section>
+
+  <section>
+    <h3>Trois niveaux d'IA</h3>
+    <div class="cols small">
+      <div class="col card accent"><h3>ANI <span class="muted">— Artificial Narrow Intelligence</span></h3>IA faible, spécifique à une tâche.<br><em>On est ici.</em></div>
+      <div class="col card fragment"><h3>AGI <span class="muted">— Artificial General Intelligence</span></h3>IA forte, généralisation de connaissances. Horizon incertain.</div>
+      <div class="col card fragment"><h3>ASI <span class="muted">— Artificial Superintelligence</span></h3>Super intelligence. Hypothétique.</div>
+    </div>
+    <aside class="notes">Tout ce qu'on construit en cours — classification d'image, agents de renforcement — est de l'ANI : excellent sur une tâche précise, incapable de généraliser au-delà.</aside>
+  </section>
+
+  <section>
+    <h3>Quelques repères historiques</h3>
+    <div class="timeline small">
+      <div class="step fragment">1957<br>Perceptron</div>
+      <div class="step fragment">1966<br>Eliza, premier chatbot</div>
+      <div class="step fragment">1997<br>Deep Blue bat Kasparov</div>
+      <div class="step fragment good">2012<br>ImageNet</div>
+      <div class="step fragment good">2016<br>AlphaGo bat Lee Sedol</div>
+      <div class="step fragment good">2022-23<br>ChatGPT, GPT-4</div>
+      <div class="step fragment">2025+<br>Boucles agentiques</div>
+    </div>
+    <p class="fragment small muted">Entre 1974 et 2006 : un long creux ("AI winter") — peu de progrès visibles.</p>
+  </section>
+
+  <section>
+    <h3>Données structurées vs non structurées</h3>
+    <div class="cols small">
+      <div class="col card"><h3>Structurées</h3>Tableaux, bases de données, CSV — déjà organisées en colonnes claires.</div>
+      <div class="col card accent fragment"><h3>Non structurées</h3>Images, audio, texte, vidéo — c'est là que le <em>deep learning</em> excelle.</div>
+    </div>
+    <aside class="notes">Les méthodes statistiques classiques marchaient déjà bien sur du structuré. L'apport du deep learning, c'est de rendre exploitable tout ce qui ne l'était pas : pixels, ondes sonores, mots.</aside>
+  </section>
+
+  <section>
+    <h3>Le cycle de vie d'un modèle</h3>
+    <div class="diagram">
+      <div class="node">Collecte des données</div><div class="arrow">→</div>
+      <div class="node">Entraînement</div><div class="arrow">→</div>
+      <div class="node">Évaluation</div><div class="arrow">→</div>
+      <div class="node">Déploiement</div><div class="arrow">→</div>
+      <div class="node">Monitoring</div>
+    </div>
+    <p class="fragment small">Et on recommence : un modèle en production se dégrade (nouvelles situations, dérive des données) — il faut le ré-entraîner.</p>
+  </section>
+
+  <section>
+    <h3>Récap — Introduction à l'IA</h3>
+    <ul class="small">
+      <li>Le ML apprend <strong>à partir d'exemples</strong>, sans règles écrites à la main.</li>
+      <li>On est au niveau <strong>ANI</strong> : très fort sur une tâche précise, aucune généralisation.</li>
+      <li>Progrès par vagues, avec un creux de 30 ans (1974–2006) avant l'explosion actuelle.</li>
+      <li>Le deep learning apporte un vrai gain sur le <strong>non structuré</strong> (image, audio, texte).</li>
+      <li>Un modèle n'est jamais "fini" : collecte → entraînement → évaluation → déploiement → monitoring, en boucle.</li>
+    </ul>
+  </section>
+</section>
+
+<section>
+  <section><h2>2. Le neurone artificiel</h2><p class="muted small">Sessions 1–2</p></section>
+
+  <section>
+    <h3>De la biologie à l'artificiel</h3>
+    <p class="small">Un neurone biologique reçoit des signaux de plusieurs autres neurones, les combine, et ne "s'active" que si le signal combiné dépasse un seuil.</p>
+
+    <div class="bio-ai-diagram">
+      <div class="bio-ai-col">
+        <svg viewBox="0 0 260 200" class="neuron-svg">
+          <path d="M10,30 L120,85" fill="none" stroke="currentColor" stroke-width="2"/>
+          <path d="M10,70 L130,95" fill="none" stroke="currentColor" stroke-width="2"/>
+          <path d="M10,130 L130,105" fill="none" stroke="currentColor" stroke-width="2"/>
+          <path d="M10,170 L120,115" fill="none" stroke="currentColor" stroke-width="2"/>
+          <ellipse cx="170" cy="100" rx="28" ry="20" fill="var(--c-accent)" fill-opacity="0.15" stroke="var(--c-accent)" stroke-width="2"/>
+          <circle cx="170" cy="100" r="5" fill="var(--c-accent)"/>
+          <line x1="198" y1="100" x2="230" y2="100" stroke="currentColor" stroke-width="2"/>
+          <path d="M230,100 L250,85" fill="none" stroke="currentColor" stroke-width="2"/>
+          <path d="M230,100 L250,100" fill="none" stroke="currentColor" stroke-width="2"/>
+          <path d="M230,100 L250,115" fill="none" stroke="currentColor" stroke-width="2"/>
+          <circle cx="250" cy="85" r="3" fill="currentColor"/>
+          <circle cx="250" cy="100" r="3" fill="currentColor"/>
+          <circle cx="250" cy="115" r="3" fill="currentColor"/>
+          <text x="20" y="20" font-size="13" fill="currentColor">dendrites</text>
+          <text x="150" y="145" font-size="13" fill="currentColor">soma</text>
+          <text x="205" y="90" font-size="13" fill="currentColor">axone</text>
+        </svg>
+        <p class="small muted">Neurone biologique</p>
+      </div>
+      <div class="bio-ai-arrow">→</div>
+      <div class="bio-ai-col">
+        <svg viewBox="0 0 260 200" class="neuron-svg">
+          <line x1="30" y1="40" x2="108" y2="92" stroke="currentColor" stroke-width="2"/>
+          <line x1="30" y1="100" x2="108" y2="100" stroke="currentColor" stroke-width="2"/>
+          <line x1="30" y1="160" x2="108" y2="108" stroke="currentColor" stroke-width="2"/>
+          <circle cx="20" cy="40" r="11" fill="var(--c-card-bg)" stroke="currentColor" stroke-width="2"/>
+          <circle cx="20" cy="100" r="11" fill="var(--c-card-bg)" stroke="currentColor" stroke-width="2"/>
+          <circle cx="20" cy="160" r="11" fill="var(--c-card-bg)" stroke="currentColor" stroke-width="2"/>
+          <text x="20" y="44" font-size="11" text-anchor="middle" fill="currentColor">x₁</text>
+          <text x="20" y="104" font-size="11" text-anchor="middle" fill="currentColor">x₂</text>
+          <text x="20" y="164" font-size="11" text-anchor="middle" fill="currentColor">x₃</text>
+          <text x="62" y="58" font-size="11" fill="currentColor">w₁</text>
+          <text x="62" y="95" font-size="11" fill="currentColor">w₂</text>
+          <text x="62" y="145" font-size="11" fill="currentColor">w₃</text>
+          <circle cx="130" cy="100" r="22" fill="var(--c-accent)" fill-opacity="0.15" stroke="var(--c-accent)" stroke-width="2"/>
+          <text x="130" y="106" font-size="18" text-anchor="middle" fill="var(--c-accent)">Σ</text>
+          <line x1="152" y1="100" x2="180" y2="100" stroke="currentColor" stroke-width="2"/>
+          <rect x="180" y="84" width="36" height="32" rx="6" fill="var(--c-card-bg)" stroke="currentColor" stroke-width="2"/>
+          <text x="198" y="106" font-size="14" text-anchor="middle" fill="currentColor">f</text>
+          <line x1="216" y1="100" x2="240" y2="100" stroke="currentColor" stroke-width="2"/>
+          <text x="250" y="104" font-size="13" fill="currentColor">y</text>
+        </svg>
+        <p class="small muted">Neurone artificiel</p>
+      </div>
+    </div>
+
+    <p class="fragment small">Le neurone artificiel reproduit cette idée avec des mathématiques simples : une somme pondérée, suivie d'une fonction qui décide de l'activation.</p>
+  </section>
+
+  <section>
+    <h3>L'équation du neurone, terme par terme</h3>
+    <p class="small">Entrées : <span class="fragment">\(x_1, x_2, \dots, x_n\)</span></p>
+    <p class="small">Poids (appris) : <span class="fragment">\(w_1, w_2, \dots, w_n\)</span></p>
+    <p class="small">Somme pondérée : <span class="fragment">\(w_1 x_1 + w_2 x_2 + \dots + w_n x_n\)</span></p>
+    <p class="small">Biais (décale la fonction) : <span class="fragment">\(+\ b\)</span></p>
+    <p class="small">Fonction d'activation : <span class="fragment">\(f(\cdot)\)</span></p>
+    <p class="fragment"><strong>\[y = f(w_1x_1 + w_2x_2 + \dots + w_nx_n + b)\]</strong></p>
+    <aside class="notes">Les poids et le biais sont les paramètres : initialisés au hasard, puis ajustés pendant l'entraînement. Le choix de la fonction d'activation, du nombre de couches, etc. — ce sont les hyperparamètres, fixés par nous.</aside>
+  </section>
+
+  <section>
+    <h3>Exemple chiffré</h3>
+    <p class="small">2 entrées : \(x_1 = 1.0\), \(x_2 = 0.5\) — poids : \(w_1 = 0.8\), \(w_2 = -0.6\) — biais \(b = 0.1\)</p>
+    <p class="fragment small">Somme pondérée : \(0.8 \times 1.0 + (-0.6) \times 0.5 + 0.1 = 0.8 - 0.3 + 0.1 = 0.6\)</p>
+    <p class="fragment small">Avec ReLU : \(f(0.6) = \max(0, 0.6) = 0.6\) → le neurone "s'active" à 0.6.</p>
+  </section>
+
+  <section>
+    <h3>Fonctions d'activation</h3>
+    <div class="cols small">
+      <div class="col card"><h3>ReLU</h3>\(\max(0, x)\)<br>Rapide, très utilisée dans les couches cachées.</div>
+      <div class="col card fragment"><h3>Sigmoid</h3>\(\dfrac{1}{1+e^{-x}}\)<br>Sortie entre 0 et 1 — probabilité binaire.</div>
+      <div class="col card fragment"><h3>Softmax</h3>Vecteur de probabilités qui somme à 1 — sortie multi-classes.</div>
+    </div>
+    <p class="fragment small muted">Choix souvent empirique : ReLU en interne, Softmax en sortie pour une classification.</p>
+  </section>
+
+  <section>
+    <h3>D'un neurone à un réseau</h3>
+    <p class="small">On empile des neurones en <strong>couches</strong>, chaque couche recevant la sortie de la précédente.</p>
+    <div class="diagram">
+      <div class="node">Entrée</div><div class="arrow">→</div>
+      <div class="node">Couche cachée 1</div><div class="arrow">→</div>
+      <div class="node">Couche cachée 2</div><div class="arrow">→</div>
+      <div class="node">Sortie</div>
+    </div>
+  </section>
+
+  <section>
+    <h3>Le forward pass</h3>
+    <p class="small">L'information circule de gauche à droite : chaque couche transforme le signal.</p>
+    <div class="diagram">
+      <div class="node" id="fp-in">Entrée</div>
+      <div class="pulse-track"><div class="pulse-dot fragment" data-anim="pulse" data-target="#fp-h1" data-class="trainable"></div></div>
+      <div class="node" id="fp-h1">Couche 1</div>
+      <div class="pulse-track"><div class="pulse-dot fragment" data-anim="pulse" data-target="#fp-h2" data-class="trainable"></div></div>
+      <div class="node" id="fp-h2">Couche 2</div>
+      <div class="pulse-track"><div class="pulse-dot fragment" data-anim="pulse" data-target="#fp-out" data-class="trainable"></div></div>
+      <div class="node" id="fp-out">Sortie \(\hat y\)</div>
+    </div>
+    <p class="fragment small muted">Avance les fragments un par un pour voir le signal progresser couche par couche.</p>
+  </section>
+
+  <section>
+    <h3>Mesurer l'erreur : la Loss</h3>
+    <p class="small">On compare la sortie prédite \(\hat y\) à la vraie étiquette \(y\).</p>
+    <p class="fragment small">Exemple avec Softmax + encodage one-hot :</p>
+    <p class="fragment small">\([0.02,\ 0.9,\ 0.03,\dots] \to [0,1,0]\) → quasi parfait, loss faible</p>
+    <p class="fragment small">\([0.02,\ 0.9,\ 0.03,\dots] \to [1,0,0]\) → mauvaise prédiction, loss élevée</p>
+    <p class="fragment small">\[\text{Loss} = -\sum y_{\text{label}} \cdot \log(y_{\text{modèle}})\]</p>
+  </section>
+
+  <section>
+    <h3>Rétropropagation &amp; descente de gradient</h3>
+    <p class="small">On remonte l'erreur de la sortie vers l'entrée pour savoir quel poids corriger, et de combien.</p>
+    <div class="diagram">
+      <div class="node" id="bp-out">Sortie / Loss</div>
+      <div class="pulse-track"><div class="pulse-dot backward fragment" data-anim="pulse" data-target="#bp-h2" data-class="trainable"></div></div>
+      <div class="node" id="bp-h2">Couche 2</div>
+      <div class="pulse-track"><div class="pulse-dot backward fragment" data-anim="pulse" data-target="#bp-h1" data-class="trainable"></div></div>
+      <div class="node" id="bp-h1">Couche 1</div>
+      <div class="pulse-track"><div class="pulse-dot backward fragment" data-anim="pulse" data-target="#bp-in" data-class="trainable"></div></div>
+      <div class="node" id="bp-in">Entrée</div>
+    </div>
+    <p class="fragment small">Chaque poids est ajusté dans la direction qui réduit l'erreur — un peu à la fois, à chaque passage.</p>
+    <aside class="notes">Le forward pass (bleu) calcule la prédiction. Le backward pass (rouge) calcule, via la dérivée, la contribution de chaque poids à l'erreur, puis on le corrige : c'est la descente de gradient.</aside>
+  </section>
+
+  <section>
+    <h3>Batch processing &amp; normalisation</h3>
+    <ul class="small">
+      <li>On traite plusieurs exemples <strong>en parallèle</strong> (batch) pour exploiter le GPU efficacement.</li>
+      <li>Les données sont <strong>normalisées</strong> avant d'entrer dans le réseau (ex. pixels 0–255 → 0–1).</li>
+    </ul>
+  </section>
+
+  <section>
+    <h3>Récap — Le neurone artificiel</h3>
+    <ul class="small">
+      <li>Un neurone = somme pondérée des entrées + biais, passée dans une fonction d'activation.</li>
+      <li><strong>Poids</strong> = appris automatiquement ; <strong>hyperparamètres</strong> = choisis par nous.</li>
+      <li>ReLU dans les couches cachées, Softmax en sortie pour une classification multi-classes.</li>
+      <li>Le <strong>forward pass</strong> calcule la prédiction ; la <strong>Loss</strong> mesure l'erreur.</li>
+      <li>La <strong>rétropropagation</strong> remonte l'erreur ; la <strong>descente de gradient</strong> corrige les poids.</li>
+      <li>On traite les exemples par <strong>batch</strong>, sur des données <strong>normalisées</strong>.</li>
+    </ul>
+  </section>
+</section>
+
+<section>
+  <section>
+    <h2>3. Types d'apprentissage</h2><p class="muted small">Sessions 2–3</p>
+    <div class="cards-grid small">
+      <div class="card accent">
+        <h3>Supervisé</h3>
+        Un <strong>gros</strong> jeu de données étiquetées. On minimise l'écart entre prédiction et étiquette.
+        <p class="muted">Exemple : reconnaître des chiffres manuscrits (MNIST).</p>
+      </div>
+      <div class="card accent">
+        <h3>Par transfert</h3>
+        <strong>Peu</strong> de données étiquetées : on part d'un modèle déjà entraîné et on l'adapte.
+        <p class="muted">Exemple : un modèle "célébrités" réadapté pour reconnaître le genre.</p>
+      </div>
+      <div class="card accent">
+        <h3>Auto-supervisé</h3>
+        Données <strong>non étiquetées</strong> : le modèle crée lui-même sa tâche d'apprentissage.
+      </div>
+      <div class="card accent">
+        <h3>Par renforcement</h3>
+        <strong>Pas de données</strong> fournies à l'avance : l'agent apprend en agissant, via des récompenses.
+        <p class="muted">Exemple : un drone de livraison qui apprend à livrer des colis.</p>
+      </div>
+    </div>
+    <p class="small fragment muted">Le transfert est le plus pertinent pour un projet personnel : on a rarement des millions d'exemples.</p>
+  </section>
+
+  <section>
+    <h3>Comparatif en un coup d'œil</h3>
+    <table class="small" style="margin:auto;">
+      <tr><th></th><th>Données nécessaires</th><th>Exemple cours</th></tr>
+      <tr class="fragment"><td>Supervisé</td><td>Beaucoup, étiquetées</td><td>MNIST</td></tr>
+      <tr class="fragment"><td>Transfert</td><td>Peu, étiquetées</td><td>Célébrités → genre</td></tr>
+      <tr class="fragment"><td>Auto-supervisé</td><td>Beaucoup, non étiquetées</td><td>—</td></tr>
+      <tr class="fragment"><td>Renforcement</td><td>Aucune (récompenses)</td><td>DeliveryDrones</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h3>Récap — Types d'apprentissage</h3>
+    <ul class="small">
+      <li><strong>Supervisé</strong> : beaucoup de données étiquetées, on minimise l'erreur.</li>
+      <li><strong>Transfert</strong> : peu de données, on réutilise un modèle pré-entraîné — le plus utile pour un projet perso.</li>
+      <li><strong>Auto-supervisé</strong> : données non étiquetées, le modèle génère sa propre tâche.</li>
+      <li><strong>Renforcement</strong> : pas de données, apprentissage par essai-erreur via une récompense.</li>
+    </ul>
+  </section>
+</section>
+
+<section>
+  <section><h2>4. Pipeline supervisé concret</h2><p class="muted small">MNIST — Session 3</p></section>
+
+  <section>
+    <h3>Le problème</h3>
+    <p class="small">Reconnaître un chiffre manuscrit (0 à 9) à partir d'une image de 28×28 pixels, en noir sur blanc.</p>
+  </section>
+
+  <section>
+    <h3>De l'image au vecteur</h3>
+    <div class="pixel-grid">
+      <div class="px on"></div><div class="px on"></div><div class="px on"></div><div class="px on"></div><div class="px on"></div><div class="px on"></div><div class="px on"></div><div class="px on"></div><div class="px on"></div><div class="px on"></div>
+      <div class="px"></div><div class="px"></div><div class="px"></div><div class="px"></div><div class="px"></div><div class="px"></div><div class="px"></div><div class="px"></div><div class="px"></div><div class="px on"></div>
+      <div class="px"></div><div class="px"></div><div class="px"></div><div class="px"></div><div class="px"></div><div class="px"></div><div class="px"></div><div class="px"></div><div class="px on"></div><div class="px"></div>
+      <div class="px"></div><div class="px"></div><div class="px"></div><div class="px"></div><div class="px"></div><div class="px"></div><div class="px"></div><div class="px on"></div><div class="px"></div><div class="px"></div>
+      <div class="px"></div><div class="px"></div><div class="px"></div><div class="px"></div><div class="px"></div><div class="px"></div><div class="px on"></div><div class="px"></div><div class="px"></div><div class="px"></div>
+      <div class="px"></div><div class="px"></div><div class="px"></div><div class="px"></div><div class="px"></div><div class="px on"></div><div class="px"></div><div class="px"></div><div class="px"></div><div class="px"></div>
+      <div class="px"></div><div class="px"></div><div class="px"></div><div class="px"></div><div class="px on"></div><div class="px"></div><div class="px"></div><div class="px"></div><div class="px"></div><div class="px"></div>
+      <div class="px"></div><div class="px"></div><div class="px"></div><div class="px"></div><div class="px on"></div><div class="px"></div><div class="px"></div><div class="px"></div><div class="px"></div><div class="px"></div>
+      <div class="px"></div><div class="px"></div><div class="px"></div><div class="px"></div><div class="px on"></div><div class="px"></div><div class="px"></div><div class="px"></div><div class="px"></div><div class="px"></div>
+      <div class="px"></div><div class="px"></div><div class="px"></div><div class="px"></div><div class="px on"></div><div class="px"></div><div class="px"></div><div class="px"></div><div class="px"></div><div class="px"></div>
+      <div class="px"></div><div class="px"></div><div class="px"></div><div class="px"></div><div class="px on"></div><div class="px"></div><div class="px"></div><div class="px"></div><div class="px"></div><div class="px"></div>
+      <div class="px"></div><div class="px"></div><div class="px"></div><div class="px"></div><div class="px on"></div><div class="px"></div><div class="px"></div><div class="px"></div><div class="px"></div><div class="px"></div>
+    </div>
+    <p class="small muted">Démo : un "7" manuscrit, simplifié en grille 10×12 pour l'illustration (le vrai MNIST fait 28×28).</p>
+    <ul class="small">
+      <li>Image 28×28 pixels, valeur 0 (blanc) à 1 (noir) après normalisation.</li>
+      <li class="fragment"><strong>Flatten</strong> : on aplatit l'image en un vecteur de 784 valeurs (28×28).</li>
+      <li class="fragment">Ce vecteur devient l'entrée du réseau de neurones.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h3>Train / Validation / Test</h3>
+    <div class="cols small">
+      <div class="col card accent">Train<br><span class="small muted">Le modèle apprend dessus, ses poids changent.</span></div>
+      <div class="col card fragment">Validation<br><span class="small muted">Surveille l'overfitting pendant l'entraînement, règle les hyperparamètres.</span></div>
+      <div class="col card fragment">Test<br><span class="small muted">Touché une seule fois, à la toute fin — la vraie mesure de performance.</span></div>
+    </div>
+    <p class="fragment small muted">Découpage classique : 80% / 20% entre train et test ; <code>validation_split=0.1</code> dans Keras.</p>
+  </section>
+
+  <section>
+    <h3>One-hot encoding</h3>
+    <p class="small">Le chiffre "2" devient un vecteur avec un seul 1, à la position 2 :</p>
+    <p class="fragment small">\[2 \longrightarrow [0,0,1,0,0,0,0,0,0,0]\]</p>
+  </section>
+
+  <section>
+    <h3>L'architecture en Keras</h3>
+    <pre class="small"><code class="language-python" data-trim>
+model = keras.Sequential(
+    [
+        keras.Input(shape=(28, 28)),
+        layers.Flatten(),
+        layers.Dense(250, activation="relu"),
+        layers.Dense(250, activation="relu"),
+        layers.Dense(250, activation="relu"),
+        layers.Dense(num_classes, activation="softmax"),
+    ]
+)
+    </code></pre>
+  </section>
+
+  <section>
+    <h3>Compter les paramètres</h3>
+    <p class="small">\(\text{params} = (\text{entrées} \times \text{neurones}) + \text{neurones}\)</p>
+    <table class="small" style="margin:auto;">
+      <tr><th>Couche</th><th>Entrées</th><th>Neurones</th><th>Total</th></tr>
+      <tr class="fragment"><td>dense</td><td>784</td><td>250</td><td>196 250</td></tr>
+      <tr class="fragment"><td>dense_1</td><td>250</td><td>250</td><td>62 750</td></tr>
+      <tr class="fragment"><td>dense_2</td><td>250</td><td>250</td><td>62 750</td></tr>
+      <tr class="fragment"><td>dense_3</td><td>250</td><td>10</td><td>2 510</td></tr>
+    </table>
+    <p class="fragment small muted">Seul le nombre d'entrées change — c'est la taille de sortie de la couche précédente.</p>
+  </section>
+
+  <section>
+    <h3>La fonction de perte (Loss)</h3>
+    <p class="small">\[\text{Loss} = -\sum y_{\text{label}} \cdot \log(y_{\text{modèle}})\]</p>
+    <p class="fragment small">Prédiction \([0.02, 0.9, 0.03,\dots]\), étiquette \([0,1,0]\) → bonne correspondance → loss faible.</p>
+    <p class="fragment small">Même prédiction, étiquette \([1,0,0]\) → mauvaise correspondance → loss élevée.</p>
+  </section>
+
+  <section>
+    <h3>La descente de gradient : le "pas"</h3>
+    <ul class="small">
+      <li>On va plus vite au début (grand pas), puis on affine (petit pas).</li>
+      <li class="fragment">On surveille si le pas change encore — s'il ne bouge plus, l'entraînement est terminé.</li>
+      <li class="fragment"><strong>Grid search</strong> : on lance plusieurs entraînements en parallèle avec des hyperparamètres différents, et on garde le plus efficace.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h3>Mesurer la réussite : l'Accuracy</h3>
+    <p class="small">\[\text{accuracy} = \frac{1}{N}\sum \mathbb{1}[\arg\max(\hat y) = \arg\max(y)]\]</p>
+    <p class="fragment small muted">Autrement dit : le pourcentage de bonnes réponses.</p>
+  </section>
+
+  <section>
+    <h3>Monitorer l'entraînement</h3>
+    <pre class="small"><code class="language-python" data-trim>
+model.fit(x_train, y_train, epochs=10, validation_split=0.1)
+    </code></pre>
+    <p class="fragment small">Un <strong>epoch</strong> = un passage complet du jeu de données dans le réseau.</p>
+    <p class="fragment small">Outil utilisé en cours pour visualiser l'entraînement en direct : <strong>Weights &amp; Biases (WandB)</strong>.</p>
+  </section>
+
+  <section>
+    <h3>Avantages / Inconvénients / Points de vigilance</h3>
+    <h4 class="small muted">Apprentissage supervisé classique</h4>
+    <div class="procon">
+      <div class="pro"><h3>✓ Avantages</h3><ul>
+        <li>Très précis quand on a beaucoup de données labellisées</li>
+        <li>Outillage mature (Keras, etc.)</li>
+      </ul></div>
+      <div class="con"><h3>✗ Inconvénients</h3><ul>
+        <li>Demande un gros volume de données étiquetées, coûteux à constituer</li>
+        <li>Ne généralise pas hors de sa distribution d'entraînement</li>
+      </ul></div>
+      <div class="watch"><h3>⚠ Vigilance</h3><ul>
+        <li>Overfitting si peu de données / trop de capacité</li>
+        <li>Respecter la séparation train / validation / test</li>
+        <li>Vérifier l'équilibre des classes</li>
+      </ul></div>
+    </div>
+  </section>
+
+  <section>
+    <h3>Récap — Pipeline supervisé</h3>
+    <ul class="small">
+      <li>Image → normalisation → <strong>flatten</strong> en vecteur → couches denses → <strong>softmax</strong>.</li>
+      <li><strong>Train / Validation / Test</strong> : trois rôles différents, jamais mélangés.</li>
+      <li>Étiquettes en <strong>one-hot</strong> pour une classification multi-classes.</li>
+      <li>Le nombre de <strong>paramètres</strong> dépend uniquement des tailles d'entrée/sortie de chaque couche.</li>
+      <li><strong>Loss</strong> = écart prédiction/étiquette ; <strong>Accuracy</strong> = % de bonnes réponses.</li>
+      <li>Le pas de la descente de gradient diminue avec le temps ; <strong>grid search</strong> pour comparer les hyperparamètres.</li>
+    </ul>
+  </section>
+</section>
+
+<section>
+  <section><h2>5. Overfitting &amp; régularisation</h2><p class="muted small">Sessions 3–4</p></section>
+
+  <section>
+    <h3>Qu'est-ce que l'overfitting ?</h3>
+    <p class="small">Le modèle <strong>apprend par cœur</strong> le jeu d'entraînement au lieu de comprendre la règle générale.</p>
+    <p class="fragment small muted">Analogie : un élève qui mémorise les réponses d'un examen blanc, mais échoue dès que les questions changent un peu.</p>
+  </section>
+
+  <section>
+    <h3>Comment le détecter</h3>
+    <svg viewBox="0 0 400 200" width="500">
+      <polyline class="chart-path fragment" data-anim="draw" fill="none" points="10,180 80,120 150,80 220,55 290,40 370,30" style="stroke:#2563eb"/>
+      <polyline class="chart-path fragment" data-anim="draw" fill="none" points="10,190 80,130 150,95 220,85 290,95 370,120" style="stroke:#dc2626"/>
+    </svg>
+    <p class="small"><span style="color:#2563eb">■</span> Train loss — continue de baisser &nbsp; <span style="color:#dc2626">■</span> Validation loss — stagne puis remonte</p>
+    <p class="fragment small muted">Val accuracy qui plafonne pendant que train accuracy s'approche de 100% : signal classique d'overfitting.</p>
+  </section>
+
+  <section>
+    <h3>Le Dropout</h3>
+    <p class="small">Pendant l'entraînement, on désactive <strong>aléatoirement</strong> certains neurones à chaque mise à jour.</p>
+    <div class="neuron-grid" id="dropout-grid">
+      <div class="n"></div><div class="n"></div><div class="n"></div><div class="n"></div><div class="n"></div>
+      <div class="n"></div><div class="n"></div><div class="n"></div><div class="n"></div><div class="n"></div>
+    </div>
+    <p class="fragment small" data-target="#dropout-grid .n:nth-child(2), #dropout-grid .n:nth-child(4), #dropout-grid .n:nth-child(7), #dropout-grid .n:nth-child(9)" data-class="off">Entraînement : <code>layers.Dropout(0.5)</code> — environ la moitié des neurones "off" à chaque passage</p>
+    <p class="fragment small">Inférence (utilisation réelle) : <strong>tous</strong> les neurones sont actifs.</p>
+    <p class="fragment small muted">Résultat observé en labo : meilleure généralisation, moins de risque d'overfitting — au prix d'une précision d'entraînement plus basse.</p>
+  </section>
+
+  <section>
+    <h3>Callbacks</h3>
+    <div class="timeline small">
+      <div class="step fragment">Entraînement en cours</div>
+      <div class="step fragment warn">val_loss stagne</div>
+      <div class="step fragment good">ReduceLROnPlateau<br>réduit le learning rate</div>
+      <div class="step fragment bad">EarlyStopping<br>arrête l'entraînement</div>
+    </div>
+    <p class="fragment small muted">On évite ainsi de continuer à entraîner pour rien — ou pire, de sur-apprendre.</p>
+  </section>
+
+  <section>
+    <h3>Avantages / Inconvénients / Points de vigilance</h3>
+    <h4 class="small muted">Dropout &amp; régularisation</h4>
+    <div class="procon">
+      <div class="pro"><h3>✓ Avantages</h3><ul>
+        <li>Réduit l'overfitting</li>
+        <li>Quasi gratuit à ajouter (une ligne de code)</li>
+      </ul></div>
+      <div class="con"><h3>✗ Inconvénients</h3><ul>
+        <li>Accuracy d'entraînement plus basse</li>
+        <li>Peut demander plus d'epochs pour converger</li>
+      </ul></div>
+      <div class="watch"><h3>⚠ Vigilance</h3><ul>
+        <li>Désactivé à l'inférence — toutes les neurones actives</li>
+        <li>Mal réglé, il peut sous-entraîner le réseau</li>
+      </ul></div>
+    </div>
+  </section>
+
+  <section>
+    <h3>Récap — Overfitting &amp; régularisation</h3>
+    <ul class="small">
+      <li>Overfitting = le modèle mémorise au lieu de généraliser — détecté par la divergence train/val loss.</li>
+      <li><strong>Dropout</strong> : désactive des neurones au hasard pendant l'entraînement uniquement.</li>
+      <li><strong>EarlyStopping</strong> / <strong>ReduceLROnPlateau</strong> : callbacks qui réagissent à la stagnation de val_loss.</li>
+      <li>Corrections possibles : arrêt précoce, régularisation, ou tout simplement plus de données.</li>
+    </ul>
+  </section>
+</section>
+
+<section>
+  <section><h2>6. Transfer learning &amp; fine-tuning</h2><p class="muted small">Session 4</p></section>
+
+  <section>
+    <h3>L'idée : ne pas repartir de zéro</h3>
+    <p class="small">Analogie : un expert en reconnaissance de chiens qui apprend à reconnaître des loups — il réutilise déjà sa capacité à voir des formes, des textures, des bords.</p>
+  </section>
+
+  <section>
+    <h3>Le backbone pré-entraîné</h3>
+    <p class="small">Exemple du cours : <strong>EfficientNetB0</strong> (Google), entraîné sur ImageNet (des millions d'images), attend des entrées 224×224px.</p>
+    <p class="fragment small">Ses couches ont déjà appris des caractéristiques génériques : bordures, textures, formes.</p>
+  </section>
+
+  <section>
+    <h3>Étape 1 — geler le backbone</h3>
+    <div class="diagram">
+      <div class="node frozen" id="tl-b1">Backbone</div>
+      <div class="node frozen" id="tl-b2">Backbone</div>
+      <div class="node frozen" id="tl-b3">Backbone</div>
+      <div class="arrow">→</div>
+      <div class="node trainable">Tête (nouvelle)</div>
+    </div>
+    <p class="fragment small">On entraîne <strong>seulement</strong> la tête de classification, initialisée au hasard.</p>
+    <p class="fragment small muted">Pourquoi ? Si on dégèle tout d'un coup, les gradients énormes de la tête aléatoire risquent de "corrompre" les poids bien appris du backbone.</p>
+  </section>
+
+  <section>
+    <h3>Étape 2 — fine-tuning</h3>
+    <div class="diagram">
+      <div class="node trainable" id="ft-b1">Backbone</div>
+      <div class="node trainable" id="ft-b2">Backbone</div>
+      <div class="node trainable fragment" data-target="#ft-b3" data-class="trainable" id="ft-b3">Backbone</div>
+      <div class="arrow">→</div>
+      <div class="node trainable">Tête</div>
+    </div>
+    <p class="fragment small">Une fois la tête stabilisée, on dégèle progressivement des couches du backbone.</p>
+    <p class="fragment small">Learning rate <strong>plus faible</strong> à cette étape : on affine sans "oublier" ce qui a déjà été appris.</p>
+  </section>
+
+  <section>
+    <h3>Augmentation de données</h3>
+    <p class="small">Transformer les images d'entraînement pour en créer des variantes : plus de diversité, moins d'overfitting.</p>
+    <div class="cols small fragment">
+      <div class="col card">RandomFlip</div>
+      <div class="col card">RandomRotation</div>
+      <div class="col card">RandomZoom</div>
+      <div class="col card">RandomContrast / Brightness</div>
+      <div class="col card">MixUp</div>
+    </div>
+  </section>
+
+  <section>
+    <h3>Attention aux effets pervers</h3>
+    <p class="small">Exemple du cours : détecter le sens de déplacement d'un animal, avec un <strong>RandomFlip</strong> (mirroring).</p>
+    <p class="fragment small bad-text" style="color:#dc2626">Le flip inverse gauche et droite → le modèle apprend une mauvaise règle.</p>
+    <p class="fragment small muted">L'augmentation de données n'est pas automatiquement bénéfique — il faut qu'elle préserve le sens de la tâche.</p>
+  </section>
+
+  <section>
+    <h3>Avantages / Inconvénients / Points de vigilance</h3>
+    <h4 class="small muted">Transfer learning &amp; fine-tuning</h4>
+    <div class="procon">
+      <div class="pro"><h3>✓ Avantages</h3><ul>
+        <li>Beaucoup moins de données / temps de calcul nécessaires</li>
+        <li>Réutilise des features génériques robustes</li>
+      </ul></div>
+      <div class="con"><h3>✗ Inconvénients</h3><ul>
+        <li>Dépend de la proximité entre domaine source et domaine cible</li>
+      </ul></div>
+      <div class="watch"><h3>⚠ Vigilance</h3><ul>
+        <li>Dégeler trop tôt/trop vite corrompt les poids pré-entraînés</li>
+        <li>Learning rate faible en fine-tuning</li>
+        <li>L'augmentation de données peut nuire (ex. mirroring)</li>
+      </ul></div>
+    </div>
+  </section>
+
+  <section>
+    <h3>Récap — Transfer learning</h3>
+    <ul class="small">
+      <li>On réutilise un backbone pré-entraîné (ex. EfficientNet) plutôt que de repartir de zéro.</li>
+      <li><strong>Étape 1</strong> : geler le backbone, entraîner uniquement la tête.</li>
+      <li><strong>Étape 2</strong> : dégeler progressivement, avec un learning rate plus faible.</li>
+      <li>L'augmentation de données aide à généraliser — mais peut casser la tâche si mal choisie.</li>
+    </ul>
+  </section>
+</section>
+
+<section>
+  <section><h2>7. Introduction au Reinforcement Learning</h2><p class="muted small">Session 5</p></section>
+
+  <section>
+    <h3>Apprendre en faisant</h3>
+    <p class="small">Analogie : on apprend à un bébé à marcher étape par étape — d'abord à quatre pattes, puis en se tenant, puis seul.</p>
+    <p class="fragment small">C'est l'idée du <strong>curriculum learning</strong> : complexifier progressivement la tâche.</p>
+  </section>
+
+  <section>
+    <h3>Le vocabulaire du RL</h3>
+    <div class="cols small">
+      <div class="col card">Agent<br><span class="muted">celui qui agit</span></div>
+      <div class="col card fragment">Action<br><span class="muted">ce qu'il choisit de faire</span></div>
+      <div class="col card fragment">Environnement<br><span class="muted">le monde qui réagit</span></div>
+      <div class="col card fragment">Récompense<br><span class="muted">le signal de retour</span></div>
+    </div>
+    <p class="fragment small muted">Un <strong>épisode</strong> se termine quand le but est atteint — ou n'est plus atteignable.</p>
+  </section>
+
+  <section>
+    <h3>La boucle du Reinforcement Learning</h3>
+    <div class="rl-loop">
+      <div class="rl-node agent">Agent</div>
+      <div class="rl-node action">Action</div>
+      <div class="rl-node env">Environnement</div>
+      <div class="rl-node reward">Récompense</div>
+      <div class="rl-dot fragment" data-anim="pulse"></div>
+    </div>
+    <p class="small">Objectif : <strong>maximiser la somme des récompenses</strong> au fil du temps.</p>
+  </section>
+
+  <section>
+    <h3>Exploration vs Exploitation</h3>
+    <p class="small">Analogie : tester un nouveau restaurant (exploration) vs retourner dans son préféré (exploitation).</p>
+    <p class="fragment small">Trop d'exploitation → on reste bloqué sur une solution médiocre.</p>
+    <p class="fragment small">Trop d'exploration → on n'exploite jamais ce qu'on a appris.</p>
+  </section>
+
+  <section>
+    <h3>L'environnement DeliveryDrones</h3>
+    <p class="small">Des drones qui livrent des colis, sans percuter les murs ni les gratte-ciels, en passant par des stations de charge.</p>
+    <div class="grid-window" style="grid-template-columns:repeat(6,30px)">
+      <div class="cell dropzone"></div><div class="cell"></div><div class="cell obstacle"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+      <div class="cell"></div><div class="cell packet"></div><div class="cell"></div><div class="cell obstacle"></div><div class="cell"></div><div class="cell"></div>
+      <div class="cell"></div><div class="cell"></div><div class="cell center"></div><div class="cell"></div><div class="cell"></div><div class="cell dropzone"></div>
+    </div>
+    <p class="small"><span style="color:var(--c-accent)">■</span> drone &nbsp;<span style="color:var(--c-warn)">■</span> colis &nbsp;<span style="color:var(--c-bad)">■</span> gratte-ciel &nbsp;<span style="color:var(--c-good)">■</span> dropzone</p>
+    <aside class="notes">On entrera plus en détail dans cet environnement dans la section "Étude de cas — DroneRL" plus loin.</aside>
+  </section>
+
+  <section>
+    <h3>On spécifie le QUOI, pas le COMMENT</h3>
+    <p class="small">L'agent trouve souvent une solution "originale", à laquelle on n'aurait pas pensé.</p>
+    <ul class="small fragment">
+      <li>Un humanoïde qui fait le grand écart pour maximiser la distance parcourue, plutôt que de marcher.</li>
+      <li>Un agent qui prend des power-up en boucle sans jamais finir la course, pour maximiser le score.</li>
+    </ul>
+    <p class="fragment small muted">Ce n'est pas un bug du modèle — c'est exactement ce qu'on lui a demandé d'optimiser.</p>
+  </section>
+
+  <section>
+    <h3>Récap — Introduction au RL</h3>
+    <ul class="small">
+      <li>L'agent apprend en agissant, via la boucle <strong>Agent → Action → Environnement → Récompense</strong>.</li>
+      <li>Objectif : maximiser la somme des récompenses, pas une récompense immédiate isolée.</li>
+      <li><strong>Exploration vs exploitation</strong> : il faut doser les deux.</li>
+      <li>L'agent optimise exactement ce qu'on lui demande — parfois de façon inattendue ("reward hacking").</li>
+      <li>Le <strong>curriculum learning</strong> permet d'introduire la complexité progressivement.</li>
+    </ul>
+  </section>
+</section>
+
+<section>
+  <section><h2>8. Q-Learning &amp; équation de Bellman</h2><p class="muted small">Sessions 5–6</p></section>
+
+  <section>
+    <h3>La Q-table</h3>
+    <p class="small">Une table qui donne, pour chaque <strong>état</strong> et chaque <strong>action</strong>, la récompense future attendue.</p>
+    <p class="fragment small muted">Mini-monde d'exemple : un couloir à 3 cases — case 1 = station de charge, case 3 = dropzone.</p>
+  </section>
+
+  <section>
+    <h3>L'équation de Bellman, terme par terme</h3>
+    <p class="small">\(s, a\) : état courant, action choisie — <span class="fragment">\(r\)</span> : récompense reçue — <span class="fragment">\(s'\)</span> : état suivant</p>
+    <p class="fragment small">\(\gamma\) (0 à 1) : importance du futur — proche de 1 = vision long terme</p>
+    <p class="fragment small">\(\alpha\) (0 à 1) : taux d'apprentissage — part de l'erreur corrigée à chaque fois</p>
+    <p class="fragment"><strong>\[Q(s,a) \leftarrow Q(s,a) + \alpha\big[r + \gamma \max_{a'} Q(s',a') - Q(s,a)\big]\]</strong></p>
+  </section>
+
+  <section>
+    <h3>Exemple pas à pas — (1) la situation de départ</h3>
+    <p class="small">État \(s=\) case 2, action \(a=\) "droite". \(\alpha = 0.5\), \(\gamma = 0.9\).</p>
+    <table class="qtable">
+      <tr><th>État</th><th>Gauche</th><th>Droite</th><th>Charger</th></tr>
+      <tr><td>1</td><td>0.10</td><td>0.20</td><td>0.05</td></tr>
+      <tr><td class="current">2</td><td>0.15</td><td class="current">0.40</td><td>—</td></tr>
+      <tr><td>3</td><td>0.10</td><td>0.00</td><td>0.00</td></tr>
+    </table>
+    <p class="small muted">\(Q(2, \text{droite}) = 0.40\)</p>
+  </section>
+
+  <section>
+    <h3>Exemple pas à pas — (2) l'action et la récompense</h3>
+    <p class="small">L'agent part de la case 2, se déplace à droite → arrive en case 3 (dropzone) → livre un colis.</p>
+    <p class="fragment small"><strong>Récompense observée : \(r = +10\)</strong></p>
+  </section>
+
+  <section>
+    <h3>Exemple pas à pas — (3) le meilleur coup suivant</h3>
+    <p class="small">On regarde la meilleure valeur possible depuis le nouvel état \(s' = \) case 3 :</p>
+    <table class="qtable">
+      <tr><th>État</th><th>Gauche</th><th>Droite</th><th>Charger</th></tr>
+      <tr><td>1</td><td>0.10</td><td>0.20</td><td>0.05</td></tr>
+      <tr><td>2</td><td>0.15</td><td>0.40</td><td>—</td></tr>
+      <tr><td class="next">3</td><td class="next">0.10</td><td>0.00</td><td>0.00</td></tr>
+    </table>
+    <p class="fragment small">\(\max_{a'} Q(s',a') = 0.10\)</p>
+  </section>
+
+  <section>
+    <h3>Exemple pas à pas — (4) appliquer la formule</h3>
+    <p class="small">\[Q(s,a) \leftarrow Q(s,a) + \alpha\big[r + \gamma \max_{a'} Q(s',a') - Q(s,a)\big]\]</p>
+    <p class="fragment small">\(= 0.40 + 0.5 \times \big[10 + 0.9 \times 0.10 - 0.40\big]\)</p>
+    <p class="fragment small">\(= 0.40 + 0.5 \times 9.69\)</p>
+    <p class="fragment small"><strong>\(= 5.245\)</strong></p>
+  </section>
+
+  <section>
+    <h3>Exemple pas à pas — (5) mise à jour de la table</h3>
+    <table class="qtable">
+      <tr><th>État</th><th>Gauche</th><th>Droite</th><th>Charger</th></tr>
+      <tr><td>1</td><td>0.10</td><td>0.20</td><td>0.05</td></tr>
+      <tr><td>2</td><td>0.15</td><td class="fragment" data-anim="flash">5.25</td><td>—</td></tr>
+      <tr><td>3</td><td>0.10</td><td>0.00</td><td>0.00</td></tr>
+    </table>
+    <p class="fragment small muted">La case se met à jour et "flashe" — c'est exactement ce qui se répète à chaque pas, des milliers de fois.</p>
+  </section>
+
+  <section>
+    <h3>L'effet de \(\alpha\) (learning rate)</h3>
+    <div class="cols small">
+      <div class="col card">\(\alpha = 0\)<br>Aucune mise à jour</div>
+      <div class="col card fragment accent">\(\alpha = 0.5\)<br>Moyenne entre ancienne et nouvelle valeur</div>
+      <div class="col card fragment">\(\alpha = 1\)<br>Remplacement total par la nouvelle estimation</div>
+    </div>
+  </section>
+
+  <section>
+    <h3>L'effet de \(\gamma\) (discount factor)</h3>
+    <div class="cols small">
+      <div class="col card">\(\gamma\) proche de 0<br>Agent "myope" — préfère la récompense immédiate</div>
+      <div class="col card fragment accent">\(\gamma\) proche de 1 (souvent 0.9–0.99)<br>Vision long terme</div>
+    </div>
+  </section>
+
+  <section>
+    <h3>Epsilon-greedy : explorer puis exploiter</h3>
+    <svg viewBox="0 0 400 150" width="500">
+      <polyline class="chart-path fragment" data-anim="draw" fill="none" points="10,20 60,30 120,55 180,85 250,105 320,118 390,125" style="stroke:#2563eb"/>
+    </svg>
+    <p class="small">\(\epsilon\) démarre haut (beaucoup d'exploration) puis décroît vers une petite valeur (surtout de l'exploitation).</p>
+    <p class="fragment small muted"><code>epsilon_start</code> → <code>epsilon_decay</code> → <code>epsilon_end</code></p>
+  </section>
+
+  <section>
+    <h3>La limite du Q-learning</h3>
+    <p class="small">La taille de la Q-table <strong>explose</strong> avec la complexité de l'environnement.</p>
+    <p class="fragment small">Avec gratte-ciels + décharge en plus dans DeliveryDrones, le nombre de combinaisons état×action devient ingérable pour une simple table.</p>
+    <p class="fragment small muted">On en reparle en détail dans l'étude de cas DroneRL.</p>
+  </section>
+
+  <section>
+    <h3>Avantages / Inconvénients / Points de vigilance</h3>
+    <h4 class="small muted">Q-Learning (Q-table)</h4>
+    <div class="procon">
+      <div class="pro"><h3>✓ Avantages</h3><ul>
+        <li>Simple à comprendre et implémenter</li>
+        <li>Pas de réseau de neurones nécessaire</li>
+      </ul></div>
+      <div class="con"><h3>✗ Inconvénients</h3><ul>
+        <li>Explose combinatoirement avec la taille de l'espace état/action</li>
+        <li>Généralise mal, lent si les récompenses sont rares</li>
+      </ul></div>
+      <div class="watch"><h3>⚠ Vigilance</h3><ul>
+        <li>Bien choisir \(\alpha\) et \(\gamma\)</li>
+        <li>Soigner l'initialisation de la table</li>
+        <li>Ne pas changer de wrapper en cours d'entraînement</li>
+      </ul></div>
+    </div>
+  </section>
+
+  <section>
+    <h3>Récap — Q-Learning &amp; Bellman</h3>
+    <ul class="small">
+      <li>La Q-table stocke une valeur par couple (état, action).</li>
+      <li>L'équation de Bellman met à jour cette valeur à partir de la récompense observée et de la meilleure action suivante.</li>
+      <li>\(\alpha\) contrôle la vitesse de mise à jour, \(\gamma\) l'horizon temporel.</li>
+      <li>\(\epsilon\)-greedy équilibre exploration et exploitation, en décroissant avec le temps.</li>
+      <li>Limite majeure : la table explose en taille quand l'environnement se complexifie.</li>
+    </ul>
+  </section>
+</section>
+
+<section>
+  <section><h2>9. Deep Q-Network (DQN)</h2><p class="muted small">Sessions 6–7</p></section>
+
+  <section>
+    <h3>De la table au réseau</h3>
+    <p class="small">Puisque la Q-table explose, on remplace la table par un <strong>réseau de neurones</strong> qui approxime les valeurs Q.</p>
+  </section>
+
+  <section>
+    <h3>Architecture DQN</h3>
+    <div class="diagram">
+      <div class="node">Observations</div><div class="arrow">→</div>
+      <div class="node">Couches de neurones<br>(Q-net)</div><div class="arrow">→</div>
+      <div class="node">Une Q-valeur<br>par action</div>
+    </div>
+    <p class="fragment small">L'agent = un <strong>optimizer</strong> (ex. Adam) + un <strong>réseau de neurones</strong> (Q-net).</p>
+    <p class="fragment small muted">L'équation de Bellman n'est plus directement utilisable — on calcule une erreur qu'on cherche à minimiser, comme pour un réseau classique.</p>
+  </section>
+
+  <section>
+    <h3>Le problème des échantillons corrélés</h3>
+    <p class="small">Un réseau de neurones apprend bien sur des données <strong>bien contrastées</strong> — pas sur une suite d'instants très similaires.</p>
+    <p class="fragment small"><strong>Replay Memory</strong> : on stocke les expériences passées, puis on en tire des échantillons <strong>aléatoires</strong> pour l'entraînement.</p>
+    <div class="buffer-row" id="replay-buffer">
+      <div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div>
+      <div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div>
+      <div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div>
+    </div>
+    <p class="fragment small" data-target="#replay-buffer .slot:nth-child(-n+10)" data-class="filled">Le buffer se remplit au fil de l'exploration...</p>
+    <p class="fragment small" data-target="#replay-buffer .slot:nth-child(2), #replay-buffer .slot:nth-child(5), #replay-buffer .slot:nth-child(8)" data-class="sampled">...puis un mini-batch est tiré au hasard pour mettre à jour le réseau.</p>
+  </section>
+
+  <section>
+    <h3>Le Target Network</h3>
+    <div class="timeline small">
+      <div class="step fragment">Entraînement du Q-net à chaque step</div>
+      <div class="step fragment good">Target Network<br>figé pendant N steps</div>
+      <div class="step fragment">Mise à jour du Target Network<br>toutes les <code>target_update_interval</code> steps</div>
+    </div>
+    <p class="fragment small muted">Cela stabilise l'entraînement : la "cible" ne bouge pas à chaque pas, ce qui évite les oscillations.</p>
+  </section>
+
+  <section>
+    <h3>Parameter sharing</h3>
+    <p class="small">Plusieurs agents (ex. plusieurs drones) peuvent être entraînés sur un <strong>seul</strong> réseau partagé.</p>
+    <p class="fragment small muted">Avantage : gère plus de cas différents. Inconvénient : epsilon baisse plus vite, l'entraînement est plus lent, tous les agents se comportent de façon similaire.</p>
+  </section>
+
+  <section>
+    <h3>Avantages / Inconvénients / Points de vigilance</h3>
+    <h4 class="small muted">Deep Q-Network (DQN)</h4>
+    <div class="procon">
+      <div class="pro"><h3>✓ Avantages</h3><ul>
+        <li>Passe à l'échelle sur de grands espaces d'observation</li>
+        <li>Généralise mieux qu'une Q-table</li>
+      </ul></div>
+      <div class="con"><h3>✗ Inconvénients</h3><ul>
+        <li>Instable sans replay memory + target network</li>
+        <li>Gourmand en calcul (GPU) et en réglages</li>
+      </ul></div>
+      <div class="watch"><h3>⚠ Vigilance</h3><ul>
+        <li>Échantillons corrélés = divergence sans replay memory</li>
+        <li>Mauvaise fréquence de mise à jour du target network</li>
+        <li>Surveiller la décroissance d'epsilon (reset si besoin)</li>
+      </ul></div>
+    </div>
+  </section>
+
+  <section>
+    <h3>Récap — DQN</h3>
+    <ul class="small">
+      <li>Le réseau de neurones remplace la table quand l'espace d'état devient trop grand.</li>
+      <li><strong>Replay memory</strong> : échantillonnage aléatoire d'expériences passées, pour éviter les corrélations.</li>
+      <li><strong>Target network</strong> : une copie figée, mise à jour périodiquement, pour stabiliser l'entraînement.</li>
+      <li><strong>Parameter sharing</strong> : plusieurs agents, un seul réseau.</li>
+    </ul>
+  </section>
+</section>
+
+<section>
+  <section><h2>10. Aller plus loin</h2><p class="muted small">Prioritized Experience Replay — Session 7</p></section>
+
+  <section>
+    <h3>Le problème du replay "aveugle"</h3>
+    <p class="small">Toutes les expériences stockées ne se valent pas : certaines sont routinières, d'autres très instructives.</p>
+  </section>
+
+  <section>
+    <h3>Prioritized Experience Replay (PER)</h3>
+    <p class="small">On priorise les expériences avec une <strong>erreur TD élevée</strong> — celles où le réseau s'est le plus trompé.</p>
+    <div class="buffer-row">
+      <div class="slot filled"></div><div class="slot filled"></div><div class="slot sampled"></div>
+      <div class="slot filled"></div><div class="slot filled"></div><div class="slot sampled"></div>
+      <div class="slot filled"></div><div class="slot filled"></div><div class="slot filled"></div><div class="slot sampled"></div>
+    </div>
+    <p class="fragment small muted">Une erreur élevée = une expérience "surprenante", donc plus riche à apprendre.</p>
+  </section>
+
+  <section>
+    <h3>Les deux réglages de PER</h3>
+    <ul class="small">
+      <li><strong>\(\alpha\) de débiaisage</strong> (0 à 1) : 0 = échantillonnage aléatoire, 1 = proportionnel à l'erreur.</li>
+      <li class="fragment"><strong>Correction d'échantillon</strong> : un poids attribué à chaque expérience tirée (rare et importante &gt; fréquente et banale), car prioriser introduit un biais statistique.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h3>Risque : le "catastrophic forgetting"</h3>
+    <p class="small">À trop se concentrer sur l'atypique, on peut <strong>oublier</strong> des comportements de base pourtant essentiels.</p>
+  </section>
+
+  <section>
+    <h3>Avantages / Inconvénients / Points de vigilance</h3>
+    <h4 class="small muted">Prioritized Experience Replay</h4>
+    <div class="procon">
+      <div class="pro"><h3>✓ Avantages</h3><ul>
+        <li>Accélère l'apprentissage en priorisant les expériences "surprenantes"</li>
+      </ul></div>
+      <div class="con"><h3>✗ Inconvénients</h3><ul>
+        <li>Introduit un biais d'échantillonnage à corriger</li>
+        <li>Un hyperparamètre de plus, plus complexe à déboguer</li>
+      </ul></div>
+      <div class="watch"><h3>⚠ Vigilance</h3><ul>
+        <li>Risque de catastrophic forgetting</li>
+        <li>Bien calibrer les poids de correction d'échantillonnage</li>
+      </ul></div>
+    </div>
+  </section>
+
+  <section>
+    <h3>Un aperçu de la suite</h3>
+    <ul class="small">
+      <li><strong>Rainbow DQN</strong> : combine plusieurs améliorations (dont PER) dans un seul agent.</li>
+      <li><strong>Agent57</strong> (DeepMind) : agent de référence sur l'ensemble des jeux Atari.</li>
+      <li class="fragment muted">Un papier de référence rappelle : mieux vaut souvent une solution simple qu'on peut scaler (plus de GPU, plus de données), plutôt qu'un système ultra-complexe type Rainbow.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h3>Les grandes familles d'algorithmes RL</h3>
+    <table class="small" style="margin:auto">
+      <tr><th>Famille</th><th>Principe</th><th>En bref</th></tr>
+      <tr class="fragment"><td>Value-based</td><td>Q-table / DQN</td><td>+ simple · − scalabilité</td></tr>
+      <tr class="fragment"><td>Policy Gradient</td><td>Prédit directement la probabilité de chaque action</td><td>+ actions continues · − variance</td></tr>
+      <tr class="fragment"><td>Model-based</td><td>Apprend une représentation du monde, prédit la frame suivante</td><td>+ efficace en données · − complexe</td></tr>
+      <tr class="fragment"><td>Acteur-Critique</td><td>Mixe action (acteur) + évaluation (critique)</td><td>+ stable · − deux réseaux à régler</td></tr>
+    </table>
+    <p class="fragment small muted">En pratique : la librairie <strong>RLlib</strong> propose des implémentations Acteur-Critique prêtes à l'emploi.</p>
+  </section>
+
+  <section>
+    <h3>Récap — Aller plus loin</h3>
+    <ul class="small">
+      <li><strong>PER</strong> priorise les expériences à erreur élevée, avec une correction du biais introduit.</li>
+      <li>Rainbow / Agent57 combinent plusieurs techniques — mais la simplicité qui scale bat souvent la complexité.</li>
+      <li>Au-delà du value-based (Q-table, DQN) : Policy Gradient, Model-based, Acteur-Critique.</li>
+    </ul>
+  </section>
+</section>
+
+<section>
+  <section><h2>11. Étude de cas — DroneRL</h2><p class="muted small">Sessions 5–7 · AIcrowd</p></section>
+
+  <section>
+    <h3>L'environnement en détail</h3>
+    <p class="small">Des drones qui livrent des colis, évitent les gratte-ciels, et se rechargent à des stations avant de tomber en panne de batterie.</p>
+    <img class="env-screenshot" src="img/dronerl-env-render.png" alt="Rendu de l'environnement DeliveryDrones : drones, gratte-ciels, stations de charge, dropzones et colis sur une grille, avec le suivi des récompenses par joueur">
+    <p class="small muted">Rendu réel de l'environnement (notebook du cours) : chaque joueur (drone) accumule sa propre somme de récompenses au fil des steps.</p>
+  </section>
+
+  <section>
+    <h3>Façonner la récompense (reward shaping)</h3>
+    <p class="small">Vu en session 7 : on fait évoluer les récompenses entraînement après entraînement pour orienter le comportement.</p>
+    <table class="small" style="margin:auto">
+      <tr><th>Run</th><th>pickup</th><th>crash</th><th>charge</th><th>delivery</th><th>Résultat observé</th></tr>
+      <tr class="fragment"><td>1</td><td>10</td><td>-0.1</td><td>-0.1</td><td>—</td><td>Récupère des colis, se crashe peu</td></tr>
+      <tr class="fragment"><td>2</td><td>0</td><td>-10</td><td>-0.1</td><td>—</td><td>Évite les crashs, mais ne livre pas</td></tr>
+      <tr class="fragment"><td>3</td><td>0</td><td>-10</td><td>10</td><td>—</td><td>Se recharge trop, "farme" la charge</td></tr>
+      <tr class="fragment"><td>4</td><td>0</td><td>-10</td><td>-0.1</td><td>1</td><td>Score correct, mais bouge peu</td></tr>
+      <tr class="fragment"><td>5</td><td>1</td><td>-10</td><td>-0.1</td><td>10</td><td>Meilleur compromis</td></tr>
+    </table>
+    <p class="fragment small muted">Leçon du cours : un bon score global peut cacher un comportement absurde — toujours vérifier la vidéo de l'agent, pas seulement le chiffre.</p>
+  </section>
+
+  <section>
+    <h3>Ce que fournit le "filtre" (wrapper)</h3>
+    <p class="small">Un <strong>observation wrapper</strong> décide ce que l'agent peut réellement voir de l'environnement.</p>
+    <p class="fragment small">Plus le wrapper est riche, plus la Q-table (ou le réseau) doit gérer de combinaisons.</p>
+  </section>
+
+  <section>
+    <h3>Wrapper 1 — <code>CompassQTable</code></h3>
+    <p class="small">Le plus simple : juste une <strong>direction</strong> vers la cible la plus proche. Pas de gratte-ciel, pas de décharge dans cette première version.</p>
+    <div class="diagram"><div class="node">Drone</div><div class="arrow">↗</div><div class="node">Boussole vers le colis</div></div>
+  </section>
+
+  <section>
+    <h3>Wrapper 2 — <code>LidarCompassQTable</code></h3>
+    <p class="small">On ajoute un <strong>LIDAR</strong> : un détecteur de proximité pour les gratte-ciels (obstacles).</p>
+    <div class="diagram"><div class="node">Boussole</div><div class="arrow">+</div><div class="node bad">Obstacles proches</div></div>
+  </section>
+
+  <section>
+    <h3>Wrapper 3 — <code>LidarCompassChargeQTable</code></h3>
+    <p class="small">On ajoute la <strong>conscience de la batterie</strong> : le drone "sait" quand il doit se recharger.</p>
+    <div class="diagram"><div class="node">Boussole + Lidar</div><div class="arrow">+</div><div class="node warn">Niveau de charge</div></div>
+  </section>
+
+  <section>
+    <h3>Wrapper 4 — <code>WindowedGridView</code></h3>
+    <p class="small">Utilisé avec DQN : une vraie <strong>fenêtre locale N×N</strong> centrée sur le drone, avec 6 canaux :</p>
+    <p class="fragment small">drones · colis · dropzones · stations · charge · obstacles</p>
+    <div class="grid-window fragment" style="grid-template-columns:repeat(5,30px)">
+      <div class="cell outside"></div><div class="cell outside"></div><div class="cell"></div><div class="cell outside"></div><div class="cell outside"></div>
+      <div class="cell outside"></div><div class="cell"></div><div class="cell obstacle"></div><div class="cell"></div><div class="cell outside"></div>
+      <div class="cell"></div><div class="cell"></div><div class="cell center"></div><div class="cell"></div><div class="cell packet"></div>
+      <div class="cell outside"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell outside"></div>
+      <div class="cell outside"></div><div class="cell outside"></div><div class="cell"></div><div class="cell outside"></div><div class="cell outside"></div>
+    </div>
+    <p class="fragment small"><code>radius=2</code> en cours, puis <code>radius=3</code> pour le challenge officiel.</p>
+    <p class="fragment small bad-text" style="color:#dc2626">L'agent ne voit <strong>jamais</strong> toute la grille — seulement son voisinage proche.</p>
+  </section>
+
+  <section>
+    <h3>Les différentes approches essayées — (1) Random</h3>
+    <p class="small">Point de départ : un agent qui choisit ses actions totalement au hasard — la ligne de base à battre.</p>
+  </section>
+
+  <section>
+    <h3>Les différentes approches essayées — (2) Algorithmique</h3>
+    <p class="small"><strong>Q-table</strong>, avec les wrappers Compass → +Lidar → +Charge.</p>
+    <p class="fragment small">Problèmes observés dans le notebook du cours :</p>
+    <ul class="small fragment">
+      <li>Récompenses rares : <strong>moins de 1%</strong> des pas sont une livraison</li>
+      <li>Pas de généralisation : il faut explorer toutes les solutions possibles</li>
+      <li>La table explose en taille avec l'environnement complet (gratte-ciels + décharge)</li>
+    </ul>
+  </section>
+
+  <section>
+    <h3>Les différentes approches essayées — (3) Neuronal</h3>
+    <p class="small"><strong>DQN</strong>, avec le wrapper <code>WindowedGridView</code>.</p>
+    <p class="fragment small">Passer d'une table à un réseau est exactement ce qui rend la fenêtre locale riche exploitable — plus besoin d'une entrée par combinaison exacte.</p>
+  </section>
+
+  <section>
+    <h3>Les différentes approches essayées — (4) Neuronal + mémoire priorisée</h3>
+    <p class="small"><strong>DQN + Prioritized Experience Replay</strong> — l'agent envoyé sur le leaderboard officiel.</p>
+    <p class="fragment small muted">Session 7 : boucle d'entraînement perfectionnée (<code>train_agents</code>, suivi tqdm, suivi d'epsilon) + évaluation finale séparée (<code>test_agents</code>, <code>summarize_rewards</code>).</p>
+  </section>
+
+  <section>
+    <h3>Règles de la compétition AIcrowd</h3>
+    <div class="cols small">
+      <div class="col card good"><h3>✓ Autorisé</h3>Architecture du réseau, durée d'entraînement, nombre de drones, récompenses <em>pendant l'entraînement</em></div>
+      <div class="col card bad fragment"><h3>✗ Interdit</h3>Changer le wrapper (<code>WindowedGridView</code>) ou son <code>radius=3</code></div>
+    </div>
+    <p class="fragment small muted">Les récompenses par défaut sont utilisées pour l'évaluation officielle, quoi que vous ayez utilisé à l'entraînement.</p>
+  </section>
+
+  <section>
+    <h3>Pour aller plus loin</h3>
+    <ul class="small">
+      <li>Leaderboard AIcrowd : <code>aicrowd.com/challenges/dronerl</code></li>
+      <li><code>github.com/nyx-ai/droneRL</code></li>
+      <li><code>github.com/MasterScrat/droneRL-workshop</code> — et ses 4 decks de slides originaux (What is RL? · The DroneDeliveries environment · DQN intro · Going further)</li>
+    </ul>
+  </section>
+
+  <section>
+    <h3>Récap — Étude de cas DroneRL</h3>
+    <ul class="small">
+      <li>Le <strong>wrapper</strong> définit ce que l'agent voit — d'une simple boussole à une fenêtre locale 6 canaux.</li>
+      <li>L'agent ne voit <strong>jamais</strong> toute la grille, seulement son voisinage.</li>
+      <li>Progression des approches : Random → Q-table (limites : rareté, généralisation, taille) → DQN → DQN + PER.</li>
+      <li>Le reward shaping change radicalement le comportement — toujours vérifier la vidéo, pas seulement le score.</li>
+      <li>La compétition AIcrowd fixe le wrapper pour que les agents soient comparables entre eux.</li>
+    </ul>
+  </section>
+</section>
+
+<section>
+  <section>
+    <h2>Ce qu'on a couvert</h2>
+    <ul class="small">
+      <li>Introduction à l'IA, ANI/AGI/ASI, cycle de vie d'un modèle</li>
+      <li>Le neurone artificiel, forward pass, rétropropagation</li>
+      <li>Types d'apprentissage : supervisé, transfert, auto-supervisé, renforcement</li>
+      <li>Pipeline supervisé concret (MNIST), overfitting, dropout</li>
+      <li>Transfer learning &amp; fine-tuning</li>
+      <li>RL : boucle agent/environnement, Q-learning, Bellman</li>
+      <li>DQN : replay memory, target network</li>
+      <li>PER et les grandes familles d'algorithmes RL</li>
+      <li>Étude de cas DroneRL : wrappers et approches successives</li>
+    </ul>
+  </section>
+  <section>
+    <h2>La suite du cours</h2>
+    <p class="small">Prochainement : NLP, modèles de séquence — RNN, LSTM, Transformers.</p>
+  </section>
+  <section>
+    <h1>Merci !</h1>
+    <p class="small muted">Questions ?</p>
+  </section>
+</section>
+
+</div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/math/math.js"></script>
+<script>
+  Reveal.initialize({
+    hash: true,
+    width: 1200,
+    height: 700,
+    margin: 0.08,
+    plugins: [ RevealNotes, RevealHighlight, RevealMath.KaTeX ],
+  });
+</script>
+<script src="js/animations.js"></script>
+<script>
+  (function () {
+    const root = document.documentElement;
+    const btn = document.getElementById('theme-toggle');
+    const stored = (() => { try { return localStorage.getItem('theme'); } catch (e) { return null; } })();
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const setTheme = (theme) => {
+      root.setAttribute('data-theme', theme);
+      btn.textContent = theme === 'dark' ? '☀️ Clair' : '🌙 Sombre';
+      try { localStorage.setItem('theme', theme); } catch (e) {}
+    };
+    setTheme(stored || (prefersDark ? 'dark' : 'light'));
+    btn.addEventListener('click', () => {
+      setTheme(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    });
+  })();
+</script>
+</body>
+</html>
