@@ -29,3 +29,7 @@ EPFL, Lancé Ising Digital. - Doctorat en neuroscience
 # Cours
 - On va utiliser des modèles en open-weight / ou opensource.
 - Il y a > 4'000 Papiers sur l'IA par mois, Il y a bcp d'innovation. => C'est impossible de tout suivre, on apprends les concepts.
+
+
+# Join the course
+<https://app.gather.town/>
